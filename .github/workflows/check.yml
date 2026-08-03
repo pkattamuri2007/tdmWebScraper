@@ -3,14 +3,14 @@ name: Check for new 2026-2027 projects
 on:
   schedule:
     # GitHub's own scheduler is unreliable (see prd.md §10) and is left here
-    # only as a free backup — the real cadence (~every 1 min) comes from an
-    # external cron-job.org trigger calling workflow_dispatch directly.
+    # only as a free backup — the real cadence (every 5 min, see prd.md §12
+    # for why not faster) comes from an external cron-job.org trigger
+    # calling workflow_dispatch directly.
     - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
 
-# Runs fire faster than a full run reliably completes, so serialize instead
-# of letting two runs race on the final git push — a newer trigger bumps a
-# still-queued older one rather than piling up an unbounded backlog.
+# Cheap insurance against overlapping runs racing on the final git push —
+# harmless at 5-minute cadence, kept from when this ran every 1 minute.
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false

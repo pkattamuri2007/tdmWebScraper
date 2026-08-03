@@ -225,3 +225,34 @@ original 15-minute design. If Purdue's side starts responding oddly (more
 "No classes found" false-empties, or the SSO-redirect behavior seen during
 initial exploration), that's the first thing to suspect, and the fix is to
 back off the cron-job.org interval — not to add retry/evasion logic.
+
+## 12. Backed off to 5 minutes after real failures at 1-minute cadence
+
+The risk flagged in §11 materialized almost immediately: within the first
+~15-20 minutes of running at ~1-minute cadence, two consecutive runs (one on
+the pre-concurrency-guard workflow, one on the post-guard version — so it
+wasn't caused by that change) failed at the `python scraper.py` step. Root
+cause wasn't confirmed — GitHub blocks anonymous/unauthenticated log
+downloads even on public repos (`403 Must have admin rights`), and re-running
+the identical script locally moments later succeeded cleanly — but the
+timing lines up with the §11 politeness-risk prediction closely enough that
+the user chose to back off rather than dig further.
+
+**Decision**: cron-job.org interval dropped from 1 minute to 5 minutes.
+Still far more responsive than the original 15-minute design and than
+GitHub's native scheduler ever reliably delivered, with a much larger
+margin against whatever pushed back at 1-minute frequency. The
+`concurrency` guard and dependency caching added in §11 stay — they're
+harmless at any interval and still protect against a slow run overlapping
+the next trigger.
+
+**Side effect worth knowing about**: while failing, the pipeline missed
+alerting on a real new section (`Purdue Student Life (Leadership)`) that
+had already appeared in Purdue's Class Search — confirmed by running the
+scraper locally against the live site while diagnosing. This wasn't a
+silent permanent loss (the failed runs never reached the `git commit` step,
+so `seen_sections.json` on `main` stayed at the old baseline and the next
+*successful* run would still catch it as "new" and alert), but it did sit
+undetected for as long as the runs kept failing. If a run appears to have
+failed, the fastest recovery is a manual `workflow_dispatch` rather than
+waiting for the next scheduled trigger.
