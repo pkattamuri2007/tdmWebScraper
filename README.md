@@ -1,8 +1,17 @@
 # Data Mine 2026-2027 Project Watcher
 
-Polls https://crp.the-examples-book.com/ every 15 minutes via GitHub Actions and
-emails/texts you when a new 2026-2027 project is added. See [prd.md](prd.md) for
-the full design.
+Polls two sources every 15 minutes via GitHub Actions and emails/texts you when
+something new shows up:
+
+1. https://crp.the-examples-book.com/ — new 2026-2027 Data Mine projects.
+2. Purdue's public [Class Search](https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_dyn_sched)
+   — new TDM 21100 lecture sections for Fall 2026 (a new section/CRN showing up
+   there means a new Corporate Partners project just opened for registration,
+   often before or independent of the Data Mine page being updated). This one
+   is scraped headlessly with Playwright since it needs real form
+   interaction, not just a static page fetch — see [prd.md](prd.md) §9 for why.
+
+See [prd.md](prd.md) for the full design.
 
 ## One-time setup
 
@@ -64,7 +73,9 @@ Running locally without `BREVO_API_KEY`/`BREVO_SENDER_EMAIL` set will raise a `K
 
 ## How it works
 
-- `scraper.py` fetches the page, parses `#projects-table`, filters to Academic Year = 2026-2027, and diffs against `seen_projects.json` by each project's stable numeric ID (parsed from its URL).
-- New projects trigger one detailed email (via Brevo) and one push notification (via ntfy.sh).
-- `seen_projects.json` is updated and committed back to the repo by the workflow after each run.
+- `scraper.py` fetches the Data Mine page, parses `#projects-table`, filters to Academic Year = 2026-2027, and diffs against `seen_projects.json` by each project's stable numeric ID (parsed from its URL).
+- It also drives Purdue's Class Search with a headless Chromium browser (Playwright): select term Fall 2026 → search subject TDM, course 21100 → parse the resulting section list, and diffs against `seen_sections.json` by CRN.
+- New projects/sections each trigger one detailed email (via Brevo) and one push notification (via ntfy.sh).
+- `seen_projects.json` and `seen_sections.json` are updated and committed back to the repo by the workflow after each run.
 - GitHub's scheduled cron is best-effort. Runs scheduled for the exact quarter-hour (`*/15 * * * *`) hit heavy queue congestion in testing (75+ min delay, zero runs) since that's when most of the platform's scheduled jobs fire; the cron is offset a few minutes off that mark to avoid it. Even offset, expect occasional lag under high platform load — this is a GitHub limitation, not something the workflow controls.
+- **Each semester**: `PURDUE_TERM_CODE` and `PURDUE_TERM_NAME` in `scraper.py` are hardcoded to Fall 2026 (`202710`) and need updating (plus a fresh `seen_sections.json` baseline) to reuse this for a different term.

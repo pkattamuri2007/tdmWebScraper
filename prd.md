@@ -103,3 +103,57 @@ tdmWebScraper/
 
 - User to create the GitHub repo and add the four secrets before first deploy.
 - User to sign up for Brevo, verify a sender email, and generate an API key; and to pick an ntfy.sh topic name and subscribe to it in the mobile app.
+
+## 9. Second source: Purdue Class Search (TDM 21100 sections)
+
+**Why**: The Data Mine projects page (§2) is updated manually and doesn't show
+whether a project's course section is actually open for registration yet. The
+user wants to know the moment a new TDM 21100 lecture section appears — that's
+the real "you can register now" signal, and it carries the sponsor/project
+name in its description.
+
+**Where it lives**: The user's linked UniTime "Scheduling Assistant"
+(`timetable.mypurdue.purdue.edu/Timetabling/sectioning`) turned out to be
+entirely behind Purdue's SSO (Microsoft/Azure AD + Duo two-factor) — not
+automatable unattended. Investigating further turned up a better source:
+Purdue's standard Banner "Class Search"
+(`selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_dyn_sched`) is public
+and requires no login at all. Searching Subject=TDM, Course=21100 there
+returns every section with its CRN and the sponsor/project title embedded in
+the description, e.g. `TDM 21100 - 103` → *Cummins (Agentic Observability
+Cockpit and Agentic AI Platform Advisor)*.
+
+**Why Playwright instead of a plain HTTP request** (unlike the Data Mine
+scraper): the search flow is a multi-step form POST
+(`bwckgens.p_proc_term_date` → `bwckschd.p_get_crse_unsec`) sitting behind an
+F5 BIG-IP load balancer. In testing, byte-identical POST bodies sent via
+`curl`/`requests` were intermittently met with an empty "No classes were
+found" response or bounced back to the search form, while the exact same
+submission via a real (or headless) browser worked reliably — consistent with
+F5's bot-fingerprinting silently serving degraded content to non-browser
+clients rather than blocking outright. A headless Chromium session via
+Playwright reproduces genuine browser form submission and was confirmed
+reliable across repeated runs.
+
+**Parsing**: the results page repeats `<th class="ddlabel">` (section
+header, e.g. `Corporate Partners III - 14705 - TDM 21100 - 101`) followed by
+a sibling `<tr>` whose `<td class="dddefault">` starts with the plain-text
+project name before any of the `Associated Term:` / `Registration Dates:`
+spans. CRN and section number are pulled from the header link via regex; a
+couple of sections have no sponsor assigned yet and parse to an empty project
+name — real data, not a parsing bug, surfaced in alerts as "(no project title
+listed yet)".
+
+**State/diffing**: identical pattern to §4.2 — `seen_sections.json`, keyed by
+CRN, seeded on first run with no alert, unioned (never pruned) on every run
+after. This makes a transient empty/degraded fetch from the F5 layer
+self-healing: it can't cause a false "section removed" or wipe prior state,
+only a missed/delayed detection until the next successful run.
+
+**Cadence/cost trade-off**: launching headless Chromium adds real time
+(~10-20s) and GitHub Actions minutes per run, unlike the near-instant Data
+Mine check. At the existing 15-minute cadence this is the dominant cost of
+the workflow. Acceptable for now; if Actions minutes become a constraint
+(relevant mainly for private repos, which get a monthly minutes quota — public
+repos get unlimited), the fix is to drop this specific check to a longer
+interval, not the whole workflow.
