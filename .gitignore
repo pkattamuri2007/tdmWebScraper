@@ -2,3 +2,8 @@
 __pycache__/
 *.pyc
 .claude/
+
+# Temporarily unpublished — kept locally, meant to come back later.
+# To restore: remove these two lines, then `git add README.md prd.md`.
+README.md
+prd.md
