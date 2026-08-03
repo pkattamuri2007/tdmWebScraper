@@ -15,6 +15,7 @@ TARGET_YEAR = "2026-2027"
 STATE_FILE = Path(__file__).parent / "seen_projects.json"
 REQUEST_TIMEOUT = 30
 BREVO_SEND_URL = "https://api.brevo.com/v3/smtp/email"
+NTFY_DEFAULT_SERVER = "https://ntfy.sh"
 
 
 def fetch_current_projects() -> dict[str, dict]:
@@ -95,12 +96,26 @@ def send_email(subject: str, body: str, recipients: list[str]) -> None:
     resp.raise_for_status()
 
 
+def send_ntfy(title: str, message: str) -> None:
+    topic = os.environ["NTFY_TOPIC"]
+    server = os.environ.get("NTFY_SERVER", NTFY_DEFAULT_SERVER).rstrip("/")
+
+    resp = requests.post(
+        f"{server}/{topic}",
+        data=message.encode("utf-8"),
+        headers={"Title": title, "Priority": "high"},
+        timeout=REQUEST_TIMEOUT,
+    )
+    resp.raise_for_status()
+
+
 def notify_new_projects(new_projects: dict[str, dict]) -> None:
     lines = [
         f"- {p['name']} ({p['company']}) — {p['location']}, {p['semester']}"
         for p in new_projects.values()
     ]
-    long_body = (
+    title = f"New {TARGET_YEAR} Data Mine project(s)"
+    body = (
         f"{len(new_projects)} new {TARGET_YEAR} project(s) found on the Data Mine projects page:\n\n"
         + "\n".join(lines)
         + f"\n\n{SITE_URL}"
@@ -108,13 +123,10 @@ def notify_new_projects(new_projects: dict[str, dict]) -> None:
 
     email_to = [addr.strip() for addr in os.environ.get("ALERT_EMAIL_TO", "").split(",") if addr.strip()]
     if email_to:
-        send_email(f"New {TARGET_YEAR} Data Mine project(s)", long_body, email_to)
+        send_email(title, body, email_to)
 
-    sms_to = [addr.strip() for addr in os.environ.get("ALERT_SMS_TO", "").split(",") if addr.strip()]
-    if sms_to:
-        short_names = ", ".join(p["name"] for p in new_projects.values())
-        short_body = f"New {TARGET_YEAR} Data Mine project(s): {short_names}"[:300]
-        send_email("", short_body, sms_to)
+    if os.environ.get("NTFY_TOPIC", "").strip():
+        send_ntfy(title, body)
 
 
 def main() -> int:

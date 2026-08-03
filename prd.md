@@ -26,7 +26,7 @@ Location (West Lafayette, IN) filtering is a nice-to-have, not required — the 
 
 **In scope:**
 - Detect newly-added rows where Academic Year = "2026-2027"
-- Alert via email and SMS (email-to-SMS carrier gateway) with project name, company, location, and semester
+- Alert via email (Brevo) and phone push notification (ntfy.sh) with project name, company, location, and semester
 - Run automatically on a schedule without the user's computer needing to be on
 
 **Out of scope:**
@@ -47,7 +47,7 @@ Location (West Lafayette, IN) filtering is a nice-to-have, not required — the 
 5. Load previously-seen project IDs from `seen_projects.json` (checked into the repo).
 6. Compute `new_projects = current - seen`.
 7. If `new_projects` is non-empty:
-   - Send one email via the Brevo transactional email API to the addresses in `ALERT_EMAIL_TO` and `ALERT_SMS_TO`, listing each new project's name, company, location, and semester.
+   - Send one email via the Brevo transactional email API to `ALERT_EMAIL_TO`, and one push notification via ntfy.sh to `NTFY_TOPIC`, listing each new project's name, company, location, and semester.
 8. Write the updated full set of current project IDs back to `seen_projects.json`.
 9. Exit non-zero (but without sending a false "new project" alert) if the page fetch/parse fails, so the GitHub Actions run shows as failed and is visible in the Actions tab.
 
@@ -58,11 +58,8 @@ Location (West Lafayette, IN) filtering is a nice-to-have, not required — the 
 
 ### 4.3 Notifications
 
-- Sent via the [Brevo](https://www.brevo.com) transactional email HTTP API (`POST /v3/smtp/email`), authenticated with an API key. Switched from the original Gmail SMTP + App Password design because the user's Google account has Advanced Protection enabled, which disables App Password generation entirely — no workaround available. Brevo requires verifying a sender email address (one-click confirmation, no domain needed) and has a free tier (300 emails/day).
-- Recipients:
-  - `ALERT_EMAIL_TO` — the user's email
-  - `ALERT_SMS_TO` — carrier email-to-SMS gateway address, e.g. `5551234567@vtext.com` (Verizon), `5551234567@txt.att.net` (AT&T), `5551234567@tmomail.net` (T-Mobile). Supports comma-separated values if the user wants more than one destination.
-- Both are just additional recipients on the same email send — no separate SMS service/API needed.
+- **Email**: sent via the [Brevo](https://www.brevo.com) transactional email HTTP API (`POST /v3/smtp/email`), authenticated with an API key. Switched from the original Gmail SMTP + App Password design because the user's Google account has Advanced Protection enabled, which disables App Password generation entirely — no workaround available. Brevo requires verifying a sender email address (one-click confirmation, no domain needed) and has a free tier (300 emails/day). Recipients: `ALERT_EMAIL_TO` (comma-separated for multiple).
+- **Phone push**: sent via [ntfy.sh](https://ntfy.sh) (`POST https://ntfy.sh/<topic>`), a free no-signup push notification service. Switched from the original carrier email-to-SMS gateway design after confirming T-Mobile discontinued `tmomail.net` in December 2024 (silently, via DNS removal) and AT&T retired its gateway in June 2025 — only Verizon's still works, and it's slated to shut down March 2027, so a carrier-agnostic solution was needed. The topic name (`NTFY_TOPIC`) acts as a shared secret: anyone who knows it can read or post to it, so it must be a hard-to-guess string, not a real word. The user subscribes to that topic in the ntfy mobile app to receive pushes.
 
 ### 4.4 Hosting & schedule
 
@@ -74,7 +71,7 @@ Location (West Lafayette, IN) filtering is a nice-to-have, not required — the 
   - `BREVO_API_KEY`
   - `BREVO_SENDER_EMAIL` — the verified sender address
   - `ALERT_EMAIL_TO`
-  - `ALERT_SMS_TO`
+  - `NTFY_TOPIC` — the user's chosen ntfy.sh topic name
 
 ## 5. Repo layout
 
@@ -98,11 +95,11 @@ tdmWebScraper/
 ## 7. Testing plan
 
 1. Run `scraper.py` locally against the live site to confirm current 18 projects parse correctly and match the seeded `seen_projects.json` (i.e., zero new-project alerts).
-2. Temporarily remove one known project ID from a local copy of `seen_projects.json` and re-run to confirm the alert email/SMS fires with correct content.
+2. Temporarily remove one known project ID from a local copy of `seen_projects.json` and re-run to confirm the alert email and push notification fire with correct content.
 3. Push to GitHub, add secrets, trigger the workflow manually via `workflow_dispatch` to confirm the Brevo send and repo commit-back work end-to-end in Actions.
 4. Let the cron schedule run for a day and confirm at least one successful scheduled execution in the Actions history.
 
 ## 8. Open items for implementation phase
 
 - User to create the GitHub repo and add the four secrets before first deploy.
-- User to sign up for Brevo, verify a sender email, and generate an API key, and confirm their carrier's SMS gateway domain.
+- User to sign up for Brevo, verify a sender email, and generate an API key; and to pick an ntfy.sh topic name and subscribe to it in the mobile app.

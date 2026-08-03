@@ -25,16 +25,14 @@ Used instead of Gmail SMTP since Gmail App Passwords require 2-Step Verification
 3. Go to **SMTP & API → API Keys** and generate a new API key
 4. Copy the API key — you'll paste it into a GitHub secret next, not into any file here
 
-### 3. Find your carrier's SMS gateway address
+### 3. Set up ntfy.sh for phone push alerts
 
-Combine your 10-digit number with your carrier's domain:
+Carrier email-to-SMS gateways are dead (T-Mobile shut down `tmomail.net` in Dec 2024, AT&T retired theirs in June 2025), so phone alerts go through [ntfy.sh](https://ntfy.sh) instead — a free, no-signup-required push notification service.
 
-| Carrier | Gateway |
-|---|---|
-| Verizon | `<number>@vtext.com` |
-| AT&T | `<number>@txt.att.net` |
-| T-Mobile | `<number>@tmomail.net` |
-| Sprint | `<number>@messaging.sprintpcs.com` |
+1. Install the **ntfy** app ([iOS](https://apps.apple.com/app/ntfy/id1625396347) / [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy)) on your phone
+2. Pick a **hard-to-guess topic name** (anyone who knows it can read your notifications or post fake ones — it's a shared secret, not a private channel), e.g. `tdm-project-alerts-8f3k2q`
+3. In the app, tap **Subscribe to topic** and enter that exact name (default server `ntfy.sh` is fine)
+4. That's it — no account, no API key
 
 ### 4. Add repo secrets
 
@@ -45,11 +43,11 @@ On GitHub: repo → **Settings → Secrets and variables → Actions → New rep
 | `BREVO_API_KEY` | The API key from step 2 |
 | `BREVO_SENDER_EMAIL` | The Gmail address you verified as a sender in step 2 |
 | `ALERT_EMAIL_TO` | Your email (comma-separate multiple) |
-| `ALERT_SMS_TO` | Your carrier gateway address from step 3 |
+| `NTFY_TOPIC` | The topic name you picked in step 3 |
 
 ### 5. Test it
 
-Repo → **Actions** tab → "Check for new 2026-2027 projects" → **Run workflow** (manual trigger). Check the run log — it should say `No new projects.` since the baseline is already seeded. To verify alerting actually works end-to-end, temporarily delete one entry from `seen_projects.json`, commit, push, and re-run — you should get an email/text, then restore the file.
+Repo → **Actions** tab → "Check for new 2026-2027 projects" → **Run workflow** (manual trigger). Check the run log — it should say `No new projects.` since the baseline is already seeded. To verify alerting actually works end-to-end, temporarily delete one entry from `seen_projects.json`, commit, push, and re-run — you should get an email and a phone push notification, then restore the file.
 
 Once that works, the `*/15 * * * *` cron schedule takes over automatically — no further action needed.
 
@@ -67,6 +65,6 @@ Running locally without `BREVO_API_KEY`/`BREVO_SENDER_EMAIL` set will raise a `K
 ## How it works
 
 - `scraper.py` fetches the page, parses `#projects-table`, filters to Academic Year = 2026-2027, and diffs against `seen_projects.json` by each project's stable numeric ID (parsed from its URL).
-- New projects trigger one detailed email and one short SMS-gateway message.
+- New projects trigger one detailed email (via Brevo) and one push notification (via ntfy.sh).
 - `seen_projects.json` is updated and committed back to the repo by the workflow after each run.
 - GitHub's scheduled cron is best-effort and can lag a few minutes under platform load — this is a GitHub limitation, not something the workflow controls.
