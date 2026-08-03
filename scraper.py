@@ -148,22 +148,27 @@ def send_email(subject: str, body: str, recipients: list[str]) -> None:
     api_key = os.environ["BREVO_API_KEY"]
     sender_email = os.environ["BREVO_SENDER_EMAIL"]
 
-    resp = requests.post(
-        BREVO_SEND_URL,
-        timeout=REQUEST_TIMEOUT,
-        headers={
-            "api-key": api_key,
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        },
-        json={
-            "sender": {"email": sender_email},
-            "to": [{"email": addr} for addr in recipients],
-            "subject": subject or "(no subject)",
-            "textContent": body,
-        },
-    )
-    resp.raise_for_status()
+    # One API call per recipient — putting everyone in the same "to" array
+    # sends a single message where each recipient sees every other
+    # recipient's address, which doesn't fly once ALERT_EMAIL_TO holds more
+    # than a couple of trusted addresses.
+    for addr in recipients:
+        resp = requests.post(
+            BREVO_SEND_URL,
+            timeout=REQUEST_TIMEOUT,
+            headers={
+                "api-key": api_key,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            json={
+                "sender": {"email": sender_email},
+                "to": [{"email": addr}],
+                "subject": subject or "(no subject)",
+                "textContent": body,
+            },
+        )
+        resp.raise_for_status()
 
 
 def send_ntfy(title: str, message: str) -> None:
