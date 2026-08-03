@@ -1,9 +1,11 @@
 name: Check for new 2026-2027 projects
-# Trivial edit to nudge GitHub into (re-)registering the schedule trigger.
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    # Offset off the exact quarter-hour (:00/:15/:30/:45) — GitHub's scheduled-run
+    # queue is most congested there, since that's when most cron jobs on the
+    # platform fire, and can delay low-priority scheduled runs by a long margin.
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
 
 permissions:

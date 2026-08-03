@@ -49,7 +49,7 @@ On GitHub: repo → **Settings → Secrets and variables → Actions → New rep
 
 Repo → **Actions** tab → "Check for new 2026-2027 projects" → **Run workflow** (manual trigger). Check the run log — it should say `No new projects.` since the baseline is already seeded. To verify alerting actually works end-to-end, temporarily delete one entry from `seen_projects.json`, commit, push, and re-run — you should get an email and a phone push notification, then restore the file.
 
-Once that works, the `*/15 * * * *` cron schedule takes over automatically — no further action needed.
+Once that works, the `7,22,37,52 * * * *` cron schedule (every 15 min, offset off the exact quarter-hour to dodge GitHub's scheduling congestion — see below) takes over automatically — no further action needed.
 
 ## Local development
 
@@ -67,4 +67,4 @@ Running locally without `BREVO_API_KEY`/`BREVO_SENDER_EMAIL` set will raise a `K
 - `scraper.py` fetches the page, parses `#projects-table`, filters to Academic Year = 2026-2027, and diffs against `seen_projects.json` by each project's stable numeric ID (parsed from its URL).
 - New projects trigger one detailed email (via Brevo) and one push notification (via ntfy.sh).
 - `seen_projects.json` is updated and committed back to the repo by the workflow after each run.
-- GitHub's scheduled cron is best-effort and can lag a few minutes under platform load — this is a GitHub limitation, not something the workflow controls.
+- GitHub's scheduled cron is best-effort. Runs scheduled for the exact quarter-hour (`*/15 * * * *`) hit heavy queue congestion in testing (75+ min delay, zero runs) since that's when most of the platform's scheduled jobs fire; the cron is offset a few minutes off that mark to avoid it. Even offset, expect occasional lag under high platform load — this is a GitHub limitation, not something the workflow controls.

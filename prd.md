@@ -65,7 +65,7 @@ Location (West Lafayette, IN) filtering is a nice-to-have, not required — the 
 
 - GitHub Actions in a new repo the user creates and owns.
 - Workflow triggers:
-  - `schedule: cron: '*/15 * * * *'` — every 15 minutes (best-effort; GitHub does not guarantee exact timing on scheduled workflows and can delay a few minutes under platform load)
+  - `schedule: cron: '7,22,37,52 * * * *'` — every 15 minutes, offset off the exact quarter-hour. GitHub does not guarantee exact timing on scheduled workflows, and in testing, runs scheduled for the exact quarter-hour mark (`*/15`) were delayed 75+ minutes with zero executions — GitHub's queue is most congested exactly at `:00/:15/:30/:45` since that's when most of the platform's cron jobs fire. Offsetting a few minutes off that mark avoids the worst of the congestion.
   - `workflow_dispatch:` — manual "Run workflow" button, for on-demand testing
 - Repo secrets (set by the user directly in GitHub's Settings → Secrets UI — never shared with or seen by the assistant):
   - `BREVO_API_KEY`
