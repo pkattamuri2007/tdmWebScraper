@@ -16,13 +16,14 @@ git push -u origin main
 
 (Create the empty repo on GitHub first, e.g. via `gh repo create <repo-name> --private --source=. --remote=origin` or the GitHub web UI, then push.)
 
-### 2. Generate a Gmail App Password
+### 2. Set up Brevo (free transactional email API)
 
-Requires 2-Step Verification enabled on your Google account.
+Used instead of Gmail SMTP since Gmail App Passwords require 2-Step Verification with no Advanced Protection — many accounts can't generate them.
 
-1. Go to https://myaccount.google.com/apppasswords
-2. Create an app password (any name, e.g. "tdm-scraper")
-3. Copy the 16-character password — you'll paste it into a GitHub secret next, not into any file here
+1. Sign up free at https://www.brevo.com (no credit card required)
+2. Go to **Senders, Domains & Dedicated IPs → Senders** and add/verify your Gmail address as a sender (click the confirmation link Brevo emails you)
+3. Go to **SMTP & API → API Keys** and generate a new API key
+4. Copy the API key — you'll paste it into a GitHub secret next, not into any file here
 
 ### 3. Find your carrier's SMS gateway address
 
@@ -41,8 +42,8 @@ On GitHub: repo → **Settings → Secrets and variables → Actions → New rep
 
 | Secret | Value |
 |---|---|
-| `GMAIL_ADDRESS` | Your Gmail address |
-| `GMAIL_APP_PASSWORD` | The app password from step 2 |
+| `BREVO_API_KEY` | The API key from step 2 |
+| `BREVO_SENDER_EMAIL` | The Gmail address you verified as a sender in step 2 |
 | `ALERT_EMAIL_TO` | Your email (comma-separate multiple) |
 | `ALERT_SMS_TO` | Your carrier gateway address from step 3 |
 
@@ -61,7 +62,7 @@ pip install -r requirements.txt
 python3 scraper.py
 ```
 
-Running locally without `GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD` set will raise a `KeyError` only if a new project is actually found (no alert needed = no crash). Set env vars locally if you want to test sending.
+Running locally without `BREVO_API_KEY`/`BREVO_SENDER_EMAIL` set will raise a `KeyError` only if a new project is actually found (no alert needed = no crash). Set env vars locally if you want to test sending.
 
 ## How it works
 

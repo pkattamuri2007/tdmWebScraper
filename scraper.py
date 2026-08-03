@@ -4,9 +4,7 @@
 import json
 import os
 import re
-import smtplib
 import sys
-from email.mime.text import MIMEText
 from pathlib import Path
 
 import requests
@@ -16,6 +14,7 @@ SITE_URL = "https://crp.the-examples-book.com/"
 TARGET_YEAR = "2026-2027"
 STATE_FILE = Path(__file__).parent / "seen_projects.json"
 REQUEST_TIMEOUT = 30
+BREVO_SEND_URL = "https://api.brevo.com/v3/smtp/email"
 
 
 def fetch_current_projects() -> dict[str, dict]:
@@ -75,18 +74,25 @@ def save_seen_projects(projects: dict[str, dict]) -> None:
 
 
 def send_email(subject: str, body: str, recipients: list[str]) -> None:
-    gmail_address = os.environ["GMAIL_ADDRESS"]
-    gmail_app_password = os.environ["GMAIL_APP_PASSWORD"]
+    api_key = os.environ["BREVO_API_KEY"]
+    sender_email = os.environ["BREVO_SENDER_EMAIL"]
 
-    msg = MIMEText(body)
-    msg["Subject"] = subject
-    msg["From"] = gmail_address
-    msg["To"] = ", ".join(recipients)
-
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login(gmail_address, gmail_app_password)
-        server.sendmail(gmail_address, recipients, msg.as_string())
+    resp = requests.post(
+        BREVO_SEND_URL,
+        timeout=REQUEST_TIMEOUT,
+        headers={
+            "api-key": api_key,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+        json={
+            "sender": {"email": sender_email},
+            "to": [{"email": addr} for addr in recipients],
+            "subject": subject or "(no subject)",
+            "textContent": body,
+        },
+    )
+    resp.raise_for_status()
 
 
 def notify_new_projects(new_projects: dict[str, dict]) -> None:

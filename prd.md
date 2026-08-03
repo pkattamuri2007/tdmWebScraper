@@ -47,7 +47,7 @@ Location (West Lafayette, IN) filtering is a nice-to-have, not required — the 
 5. Load previously-seen project IDs from `seen_projects.json` (checked into the repo).
 6. Compute `new_projects = current - seen`.
 7. If `new_projects` is non-empty:
-   - Send one email via Gmail SMTP to the addresses in `ALERT_EMAIL_TO` and `ALERT_SMS_TO`, listing each new project's name, company, location, and semester.
+   - Send one email via the Brevo transactional email API to the addresses in `ALERT_EMAIL_TO` and `ALERT_SMS_TO`, listing each new project's name, company, location, and semester.
 8. Write the updated full set of current project IDs back to `seen_projects.json`.
 9. Exit non-zero (but without sending a false "new project" alert) if the page fetch/parse fails, so the GitHub Actions run shows as failed and is visible in the Actions tab.
 
@@ -58,7 +58,7 @@ Location (West Lafayette, IN) filtering is a nice-to-have, not required — the 
 
 ### 4.3 Notifications
 
-- Sent via Gmail SMTP (`smtplib`, port 587/TLS) using an **App Password** (not the account password).
+- Sent via the [Brevo](https://www.brevo.com) transactional email HTTP API (`POST /v3/smtp/email`), authenticated with an API key. Switched from the original Gmail SMTP + App Password design because the user's Google account has Advanced Protection enabled, which disables App Password generation entirely — no workaround available. Brevo requires verifying a sender email address (one-click confirmation, no domain needed) and has a free tier (300 emails/day).
 - Recipients:
   - `ALERT_EMAIL_TO` — the user's email
   - `ALERT_SMS_TO` — carrier email-to-SMS gateway address, e.g. `5551234567@vtext.com` (Verizon), `5551234567@txt.att.net` (AT&T), `5551234567@tmomail.net` (T-Mobile). Supports comma-separated values if the user wants more than one destination.
@@ -71,8 +71,8 @@ Location (West Lafayette, IN) filtering is a nice-to-have, not required — the 
   - `schedule: cron: '*/15 * * * *'` — every 15 minutes (best-effort; GitHub does not guarantee exact timing on scheduled workflows and can delay a few minutes under platform load)
   - `workflow_dispatch:` — manual "Run workflow" button, for on-demand testing
 - Repo secrets (set by the user directly in GitHub's Settings → Secrets UI — never shared with or seen by the assistant):
-  - `GMAIL_ADDRESS`
-  - `GMAIL_APP_PASSWORD`
+  - `BREVO_API_KEY`
+  - `BREVO_SENDER_EMAIL` — the verified sender address
   - `ALERT_EMAIL_TO`
   - `ALERT_SMS_TO`
 
@@ -86,7 +86,7 @@ tdmWebScraper/
 ├── .github/
 │   └── workflows/
 │       └── check.yml
-├── README.md                 # setup: Gmail App Password, GitHub secrets, enabling Actions
+├── README.md                 # setup: Brevo account, GitHub secrets, enabling Actions
 └── prd.md
 ```
 
@@ -99,10 +99,10 @@ tdmWebScraper/
 
 1. Run `scraper.py` locally against the live site to confirm current 18 projects parse correctly and match the seeded `seen_projects.json` (i.e., zero new-project alerts).
 2. Temporarily remove one known project ID from a local copy of `seen_projects.json` and re-run to confirm the alert email/SMS fires with correct content.
-3. Push to GitHub, add secrets, trigger the workflow manually via `workflow_dispatch` to confirm the Gmail send and repo commit-back work end-to-end in Actions.
+3. Push to GitHub, add secrets, trigger the workflow manually via `workflow_dispatch` to confirm the Brevo send and repo commit-back work end-to-end in Actions.
 4. Let the cron schedule run for a day and confirm at least one successful scheduled execution in the Actions history.
 
 ## 8. Open items for implementation phase
 
 - User to create the GitHub repo and add the four secrets before first deploy.
-- User to generate a Gmail App Password (requires 2FA enabled on the Google account) and confirm their carrier's SMS gateway domain.
+- User to sign up for Brevo, verify a sender email, and generate an API key, and confirm their carrier's SMS gateway domain.
