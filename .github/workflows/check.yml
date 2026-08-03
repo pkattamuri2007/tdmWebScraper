@@ -1,4 +1,5 @@
 name: Check for new 2026-2027 projects
+# Trivial edit to nudge GitHub into (re-)registering the schedule trigger.
 
 on:
   schedule:
