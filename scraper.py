@@ -86,14 +86,19 @@ def fetch_current_sections() -> dict[str, dict]:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(user_agent=PURDUE_USER_AGENT)
         try:
-            page.goto(PURDUE_SEARCH_URL, timeout=REQUEST_TIMEOUT * 1000)
+            # domcontentloaded rather than the default "load": we only need
+            # the DOM ready to select/fill/click, and waiting for every
+            # resource (including the page's Google Analytics script) to
+            # finish was causing occasional 30s timeouts against Purdue's
+            # site for no benefit to us.
+            page.goto(PURDUE_SEARCH_URL, timeout=REQUEST_TIMEOUT * 1000, wait_until="domcontentloaded")
             page.select_option('select[name="p_term"]', PURDUE_TERM_CODE)
-            with page.expect_navigation(timeout=REQUEST_TIMEOUT * 1000):
+            with page.expect_navigation(timeout=REQUEST_TIMEOUT * 1000, wait_until="domcontentloaded"):
                 page.click('input[type="submit"]')
 
             page.select_option('select[name="sel_subj"]', PURDUE_SUBJECT)
             page.fill('input[name="sel_crse"]', PURDUE_COURSE)
-            with page.expect_navigation(timeout=REQUEST_TIMEOUT * 1000):
+            with page.expect_navigation(timeout=REQUEST_TIMEOUT * 1000, wait_until="domcontentloaded"):
                 page.click('input[type="submit"]')
 
             html = page.content()
