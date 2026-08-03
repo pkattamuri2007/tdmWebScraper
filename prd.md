@@ -256,3 +256,56 @@ so `seen_sections.json` on `main` stayed at the old baseline and the next
 undetected for as long as the runs kept failing. If a run appears to have
 failed, the fastest recovery is a manual `workflow_dispatch` rather than
 waiting for the next scheduled trigger.
+
+## 13. Correction: real cause was a `send_ntfy` Unicode bug, not Purdue/F5
+
+§11 and §12's "Purdue is pushing back under load" theory was **wrong**. The
+user pulled the actual traceback from a failed run's log (something I
+couldn't do myself — GitHub blocks anonymous log downloads even on public
+repos), and the real cause was a plain bug that had nothing to do with
+request frequency:
+
+```
+UnicodeEncodeError: 'latin-1' codec can't encode character '—'
+  in position 30: ordinal not in range(256)
+  ...at http/client.py putheader(), called from send_ntfy()
+```
+
+`send_ntfy()` put the notification `title` directly into an HTTP `Title`
+header (`headers={"Title": title, ...}`), and HTTP header values must be
+Latin-1. `notify_new_sections()`'s title —
+`f"New TDM {PURDUE_COURSE} section(s) open — {PURDUE_TERM_NAME}"` — contains
+an em dash (U+2014), which isn't representable in Latin-1, so building the
+request itself raised before any HTTP call was even made.
+
+**Why this only surfaced now**: `send_ntfy()`/`notify_new_sections()` had
+never actually executed in production before — every prior real run found
+zero new sections and took the "nothing new" branch. `Purdue Student Life
+(Leadership)` was the first genuine new section since this feature shipped,
+so it was the first time this code path ran for real. It coincided almost
+exactly with the 1-minute cadence experiment (§11), which is what made the
+frequency theory look plausible — a classic correlation/causation trap. My
+own local reproduction attempts during diagnosis also "succeeded" and
+appeared to support that theory, but only because my local shell had no
+`NTFY_TOPIC` set, so `send_ntfy()` was silently skipped there too — I was
+inadvertently testing a different code path than production.
+
+**Fix**: `send_ntfy()` now posts to ntfy's JSON publish endpoint
+(`POST {server}/` with `{"topic", "title", "message", "priority"}` in the
+body) instead of the header-based API, since a JSON body handles arbitrary
+UTF-8 (titles/messages built from scraped company and project names could
+contain far more than one em dash — accented names, curly quotes, etc. —
+and the header approach was one `—` away from breaking every time
+regardless of cadence). One more gotcha found while fixing: the JSON API
+requires `priority` as an integer 1-5 (4 = "high"), unlike the header API
+which also accepts string aliases like `"high"` — sending the string there
+produces a misleading `400 "request body must be valid JSON"` even though
+the JSON is syntactically valid. Verified against ntfy.sh live with a
+disposable test topic before rolling out.
+
+**Standing question for the user**: now that the real cause is fixed and
+confirmed unrelated to Purdue, the 5-minute backoff from §12 is no longer
+necessary on technical grounds — it was a reasonable precaution given the
+information available at the time, but nothing observed actually implicates
+polling frequency. Worth deciding explicitly whether to return to a faster
+cadence or stay at 5 minutes, rather than carrying it forward by default.

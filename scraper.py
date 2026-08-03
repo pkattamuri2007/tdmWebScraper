@@ -170,10 +170,14 @@ def send_ntfy(title: str, message: str) -> None:
     topic = os.environ["NTFY_TOPIC"]
     server = os.environ.get("NTFY_SERVER", NTFY_DEFAULT_SERVER).rstrip("/")
 
+    # Publish via JSON body rather than the Title/Priority HTTP headers ntfy
+    # also supports — header values must be Latin-1, and titles here can
+    # contain arbitrary Unicode (em dashes, scraped company/project names).
+    # Unlike the header API, the JSON API wants priority as an int 1-5
+    # (4 = "high"), not the string alias.
     resp = requests.post(
-        f"{server}/{topic}",
-        data=message.encode("utf-8"),
-        headers={"Title": title, "Priority": "high"},
+        server,
+        json={"topic": topic, "title": title, "message": message, "priority": 4},
         timeout=REQUEST_TIMEOUT,
     )
     resp.raise_for_status()
