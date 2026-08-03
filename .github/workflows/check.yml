@@ -2,11 +2,18 @@ name: Check for new 2026-2027 projects
 
 on:
   schedule:
-    # Offset off the exact quarter-hour (:00/:15/:30/:45) — GitHub's scheduled-run
-    # queue is most congested there, since that's when most cron jobs on the
-    # platform fire, and can delay low-priority scheduled runs by a long margin.
+    # GitHub's own scheduler is unreliable (see prd.md §10) and is left here
+    # only as a free backup — the real cadence (~every 1 min) comes from an
+    # external cron-job.org trigger calling workflow_dispatch directly.
     - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
+
+# Runs fire faster than a full run reliably completes, so serialize instead
+# of letting two runs race on the final git push — a newer trigger bumps a
+# still-queued older one rather than piling up an unbounded backlog.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -20,10 +27,21 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
+          cache: "pip"
 
       - run: pip install -r requirements.txt
 
-      - run: playwright install --with-deps chromium
+      - name: Cache Playwright browser
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+
+      - if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: playwright install --with-deps chromium
+      - if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: playwright install-deps chromium
 
       - run: python scraper.py
         env:

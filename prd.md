@@ -65,7 +65,7 @@ Location (West Lafayette, IN) filtering is a nice-to-have, not required — the 
 
 - GitHub Actions in a new repo the user creates and owns.
 - Workflow triggers:
-  - `schedule: cron: '7,22,37,52 * * * *'` — every 15 minutes, offset off the exact quarter-hour. GitHub does not guarantee exact timing on scheduled workflows, and in testing, runs scheduled for the exact quarter-hour mark (`*/15`) were delayed 75+ minutes with zero executions — GitHub's queue is most congested exactly at `:00/:15/:30/:45` since that's when most of the platform's cron jobs fire. Offsetting a few minutes off that mark avoids the worst of the congestion.
+  - `schedule: cron: '7,22,37,52 * * * *'` — every 15 minutes, offset off the exact quarter-hour. GitHub does not guarantee exact timing on scheduled workflows, and in testing, runs scheduled for the exact quarter-hour mark (`*/15`) were delayed 75+ minutes with zero executions — GitHub's queue is most congested exactly at `:00/:15/:30/:45` since that's when most of the platform's cron jobs fire. Offsetting a few minutes off that mark avoids the worst of the congestion. **Superseded**: this trigger turned out to fire almost never in practice regardless of offset — see §10 for the external-trigger replacement and §11 for the current ~1-minute cadence.
   - `workflow_dispatch:` — manual "Run workflow" button, for on-demand testing
 - Repo secrets (set by the user directly in GitHub's Settings → Secrets UI — never shared with or seen by the assistant):
   - `BREVO_API_KEY`
@@ -173,12 +173,12 @@ config.
 **Fix**: rather than depend on GitHub's internal scheduler at all, an
 external free cron service (cron-job.org) calls
 `POST /repos/{owner}/{repo}/actions/workflows/check.yml/dispatches` — the same
-REST endpoint behind the existing `workflow_dispatch:` trigger — every 15
-minutes, using a fine-grained GitHub token scoped to just this repo's Actions
-read/write permission. No workflow file changes were needed since
-`workflow_dispatch:` already existed as a trigger; this just calls it
-externally on a schedule GitHub itself won't reliably keep. See
-[README.md](README.md) step 6 for setup.
+REST endpoint behind the existing `workflow_dispatch:` trigger — using a
+fine-grained GitHub token scoped to just this repo's Actions read/write
+permission. No workflow file changes were needed since `workflow_dispatch:`
+already existed as a trigger; this just calls it externally on a schedule
+GitHub itself won't reliably keep. See [README.md](README.md) step 6 for
+setup.
 
 The original `schedule:` block is left in the workflow as a free, harmless
 backup — an occasional bonus fire from GitHub's own cron doesn't conflict
@@ -187,3 +187,41 @@ with the external trigger, since every run is idempotent (§4.2, §9).
 I (the assistant) can't create the GitHub token or the cron-job.org account —
 both require the user's own authenticated session — so this step is manual
 for the user, documented step-by-step in the README.
+
+## 11. Cadence tightened to ~1 minute — concurrency guard added
+
+Once the external trigger (§10) removed GitHub's own scheduler as the
+bottleneck, the user asked to shorten the interval as far as practical.
+cron-job.org's fastest tier is ~1 minute, which was adopted — but two
+new risks come with going that fast, both addressed directly:
+
+- **Overlapping runs racing on `git push`.** A run takes tens of seconds
+  (checkout, deps, headless Chromium, two site fetches, commit); at a
+  1-minute trigger interval a slow run can still be in flight when the next
+  trigger fires. Without protection, two concurrent runs both trying to
+  push a `seen_*.json` update would race exactly like the manual
+  "rejected — fetch first" conflict hit mid-session when a human push
+  collided with an automated one. Fixed with a workflow-level
+  `concurrency: { group: <workflow name>, cancel-in-progress: false }`
+  block: GitHub queues at most one pending run per group behind the one
+  currently executing, and a newer trigger replaces an older still-queued
+  one rather than letting a backlog build up. `actions/checkout` resolves
+  the ref at job-start time, so a queued run automatically picks up
+  whatever the previous run just pushed — no explicit `git pull` needed in
+  the commit step.
+- **Slow runs make the 1-minute interval moot in practice.** Every run was
+  reinstalling pip packages and downloading/installing a full Chromium
+  browser (~30-60s) from scratch. Added `cache: "pip"` to
+  `actions/setup-python` and an `actions/cache` step keyed on
+  `requirements.txt` for Playwright's browser cache
+  (`~/.cache/ms-playwright`), so most runs skip both installs entirely and
+  the per-run wall-clock time — and thus how often overlap/queueing
+  actually happens — drops substantially.
+
+**Politeness/risk note carried over from §9**: hitting Purdue's Banner
+system (already observed to have F5 bot-sensitivity) with a full headless
+browser session every minute, indefinitely, is more aggressive than the
+original 15-minute design. If Purdue's side starts responding oddly (more
+"No classes found" false-empties, or the SSO-redirect behavior seen during
+initial exploration), that's the first thing to suspect, and the fix is to
+back off the cron-job.org interval — not to add retry/evasion logic.

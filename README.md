@@ -1,7 +1,7 @@
 # Data Mine 2026-2027 Project Watcher
 
-Polls two sources every 15 minutes via GitHub Actions and emails/texts you when
-something new shows up:
+Polls two sources roughly every minute via GitHub Actions and emails/texts you
+when something new shows up:
 
 1. https://crp.the-examples-book.com/ — new 2026-2027 Data Mine projects.
 2. Purdue's public [Class Search](https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_dyn_sched)
@@ -58,7 +58,7 @@ On GitHub: repo → **Settings → Secrets and variables → Actions → New rep
 
 Repo → **Actions** tab → "Check for new 2026-2027 projects" → **Run workflow** (manual trigger). Check the run log — it should say `No new projects.` since the baseline is already seeded. To verify alerting actually works end-to-end, temporarily delete one entry from `seen_projects.json`, commit, push, and re-run — you should get an email and a phone push notification, then restore the file.
 
-Once that works, the `7,22,37,52 * * * *` cron schedule (every 15 min, offset off the exact quarter-hour to dodge GitHub's scheduling congestion — see below) is supposed to take over automatically. **In practice it doesn't fire reliably — see step 6.**
+Once that works, set up the external trigger in step 6 below — GitHub's own `schedule:` cron is left in the workflow but is not the real trigger; it fires unreliably in practice.
 
 ### 6. Fix unreliable scheduling with an external trigger (recommended)
 
@@ -72,7 +72,7 @@ GitHub's native `schedule:` trigger runs on a low-priority, best-effort queue an
 2. **Sign up free at [cron-job.org](https://cron-job.org)** and create a new cronjob:
    - **URL**: `https://api.github.com/repos/<your-username>/<repo-name>/actions/workflows/check.yml/dispatches`
    - **Request method**: `POST`
-   - **Schedule**: every 15 minutes
+   - **Schedule**: every 1 minute (cron-job.org's fastest tier; the workflow now has a `concurrency` guard — see below — so overlapping triggers queue instead of racing)
    - **Headers**:
 
      | Key | Value |
@@ -86,6 +86,8 @@ GitHub's native `schedule:` trigger runs on a low-priority, best-effort queue an
 4. The `schedule:` block in `check.yml` is left in place as a harmless backup — if it happens to fire on its own, it just runs an extra (idempotent) check.
 
 The token only needs Actions read/write on this one repo — don't use a classic (account-wide) token, and don't put the token in any file in this repo; it lives only in cron-job.org's job configuration.
+
+At a 1-minute trigger cadence, `check.yml` also caches pip packages and the Playwright Chromium browser between runs (`actions/cache`) so most runs skip the ~30-60s install step, and a `concurrency` group serializes runs so a slow run (e.g. a flaky Purdue fetch) can't overlap with the next trigger and race on the final `git push` — a newer trigger just bumps a still-queued older one rather than piling up a backlog.
 
 ## Local development
 
