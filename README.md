@@ -58,7 +58,30 @@ On GitHub: repo → **Settings → Secrets and variables → Actions → New rep
 
 Repo → **Actions** tab → "Check for new 2026-2027 projects" → **Run workflow** (manual trigger). Check the run log — it should say `No new projects.` since the baseline is already seeded. To verify alerting actually works end-to-end, temporarily delete one entry from `seen_projects.json`, commit, push, and re-run — you should get an email and a phone push notification, then restore the file.
 
-Once that works, the `7,22,37,52 * * * *` cron schedule (every 15 min, offset off the exact quarter-hour to dodge GitHub's scheduling congestion — see below) takes over automatically — no further action needed.
+Once that works, the `7,22,37,52 * * * *` cron schedule (every 15 min, offset off the exact quarter-hour to dodge GitHub's scheduling congestion — see below) is supposed to take over automatically. **In practice it doesn't fire reliably — see step 6.**
+
+### 6. Fix unreliable scheduling with an external trigger (recommended)
+
+GitHub's native `schedule:` trigger runs on a low-priority, best-effort queue and can silently skip fires under load, with no error anywhere. In testing on this repo it fired **once** in the first 4 hours despite ~16 expected fires — everything else was manual. This isn't fixable from the workflow file; the reliable workaround is to have an external, free scheduler call GitHub's API to trigger the workflow instead of waiting on GitHub's own cron.
+
+1. **Create a GitHub token**: [github.com/settings/personal-access-tokens](https://github.com/settings/personal-access-tokens) → **Fine-grained tokens** → **Generate new token**.
+   - Set an expiration (e.g. 1 year).
+   - **Repository access**: "Only select repositories" → this repo only.
+   - **Permissions**: Repository permissions → **Actions** → **Read and write**.
+   - Generate and copy the token — you won't see it again.
+2. **Sign up free at [cron-job.org](https://cron-job.org)** and create a new cronjob:
+   - **URL**: `https://api.github.com/repos/<your-username>/<repo-name>/actions/workflows/check.yml/dispatches`
+   - **Request method**: `POST`
+   - **Schedule**: every 15 minutes
+   - **Headers**:
+     - `Authorization: Bearer <the token from step 1>`
+     - `Accept: application/vnd.github+json`
+     - `Content-Type: application/json`
+   - **Request body**: `{"ref":"main"}`
+3. Save, then use cron-job.org's "Test run" / "Execute now" button — it should return **204 No Content**. A 401/404 means the token or URL is wrong; check the Actions tab to confirm a new run actually started.
+4. The `schedule:` block in `check.yml` is left in place as a harmless backup — if it happens to fire on its own, it just runs an extra (idempotent) check.
+
+The token only needs Actions read/write on this one repo — don't use a classic (account-wide) token, and don't put the token in any file in this repo; it lives only in cron-job.org's job configuration.
 
 ## Local development
 
@@ -77,5 +100,5 @@ Running locally without `BREVO_API_KEY`/`BREVO_SENDER_EMAIL` set will raise a `K
 - It also drives Purdue's Class Search with a headless Chromium browser (Playwright): select term Fall 2026 → search subject TDM, course 21100 → parse the resulting section list, and diffs against `seen_sections.json` by CRN.
 - New projects/sections each trigger one detailed email (via Brevo) and one push notification (via ntfy.sh).
 - `seen_projects.json` and `seen_sections.json` are updated and committed back to the repo by the workflow after each run.
-- GitHub's scheduled cron is best-effort. Runs scheduled for the exact quarter-hour (`*/15 * * * *`) hit heavy queue congestion in testing (75+ min delay, zero runs) since that's when most of the platform's scheduled jobs fire; the cron is offset a few minutes off that mark to avoid it. Even offset, expect occasional lag under high platform load — this is a GitHub limitation, not something the workflow controls.
+- GitHub's scheduled cron is best-effort and unreliable in practice (see step 6 above) — an external pinger hitting the `workflow_dispatch` API is the actual primary trigger; the `schedule:` block is a harmless backup that may or may not fire.
 - **Each semester**: `PURDUE_TERM_CODE` and `PURDUE_TERM_NAME` in `scraper.py` are hardcoded to Fall 2026 (`202710`) and need updating (plus a fresh `seen_sections.json` baseline) to reuse this for a different term.

@@ -157,3 +157,33 @@ the workflow. Acceptable for now; if Actions minutes become a constraint
 (relevant mainly for private repos, which get a monthly minutes quota — public
 repos get unlimited), the fix is to drop this specific check to a longer
 interval, not the whole workflow.
+
+## 10. GitHub's native cron trigger is unreliable — external trigger added
+
+**Observed**: in the first ~4 hours after this workflow was created, GitHub's
+`schedule:` trigger (offset to `7,22,37,52 * * * *` specifically to dodge
+quarter-hour queue congestion, per §4.4) fired **once**, against ~16 expected
+fires. Every other run in that window was a manual `workflow_dispatch`. The
+workflow itself was healthy throughout (`state: active` via the Actions API,
+valid cron syntax, the one scheduled run and all manual runs succeeded) — this
+is GitHub's own scheduled-run queue silently dropping fires under load, a
+widely-reported limitation of hosted Actions cron, not a bug in this repo's
+config.
+
+**Fix**: rather than depend on GitHub's internal scheduler at all, an
+external free cron service (cron-job.org) calls
+`POST /repos/{owner}/{repo}/actions/workflows/check.yml/dispatches` — the same
+REST endpoint behind the existing `workflow_dispatch:` trigger — every 15
+minutes, using a fine-grained GitHub token scoped to just this repo's Actions
+read/write permission. No workflow file changes were needed since
+`workflow_dispatch:` already existed as a trigger; this just calls it
+externally on a schedule GitHub itself won't reliably keep. See
+[README.md](README.md) step 6 for setup.
+
+The original `schedule:` block is left in the workflow as a free, harmless
+backup — an occasional bonus fire from GitHub's own cron doesn't conflict
+with the external trigger, since every run is idempotent (§4.2, §9).
+
+I (the assistant) can't create the GitHub token or the cron-job.org account —
+both require the user's own authenticated session — so this step is manual
+for the user, documented step-by-step in the README.
