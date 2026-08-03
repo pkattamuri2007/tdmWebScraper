@@ -74,9 +74,13 @@ GitHub's native `schedule:` trigger runs on a low-priority, best-effort queue an
    - **Request method**: `POST`
    - **Schedule**: every 15 minutes
    - **Headers**:
-     - `Authorization: Bearer <the token from step 1>`
-     - `Accept: application/vnd.github+json`
-     - `Content-Type: application/json`
+
+     | Key | Value |
+     |---|---|
+     | `Authorization` | `Bearer <the token from step 1>` |
+     | `Accept` | `application/vnd.github+json` |
+     | `Content-Type` | `application/json` |
+
    - **Request body**: `{"ref":"main"}`
 3. Save, then use cron-job.org's "Test run" / "Execute now" button — it should return **204 No Content**. A 401/404 means the token or URL is wrong; check the Actions tab to confirm a new run actually started.
 4. The `schedule:` block in `check.yml` is left in place as a harmless backup — if it happens to fire on its own, it just runs an extra (idempotent) check.
