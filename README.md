@@ -1,7 +1,7 @@
 # Data Mine 2026-2027 Project Watcher
 
-Polls two sources every 5 minutes via GitHub Actions and emails/texts you when
-something new shows up:
+Polls two sources roughly every minute via GitHub Actions and emails/texts you
+when something new shows up:
 
 1. https://crp.the-examples-book.com/ — new 2026-2027 Data Mine projects.
 2. Purdue's public [Class Search](https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_dyn_sched)
@@ -72,7 +72,7 @@ GitHub's native `schedule:` trigger runs on a low-priority, best-effort queue an
 2. **Sign up free at [cron-job.org](https://cron-job.org)** and create a new cronjob:
    - **URL**: `https://api.github.com/repos/<your-username>/<repo-name>/actions/workflows/check.yml/dispatches`
    - **Request method**: `POST`
-   - **Schedule**: every 5 minutes. (Was briefly set to cron-job.org's fastest 1-minute tier, but that triggered real, unconfirmed failures against Purdue's Class Search almost immediately — see [prd.md](prd.md) §12. 5 minutes is still far more responsive than GitHub's own scheduler ever reliably delivered, with more breathing room.)
+   - **Schedule**: every 1 minute (cron-job.org's fastest tier). Briefly backed off to 5 minutes over a suspicion this was too aggressive against Purdue's Class Search, but the real cause of the failures around that time turned out to be an unrelated code bug (see [prd.md](prd.md) §13) — nothing observed actually implicates request frequency, so this is back to 1 minute.
    - **Headers**:
 
      | Key | Value |
@@ -87,7 +87,7 @@ GitHub's native `schedule:` trigger runs on a low-priority, best-effort queue an
 
 The token only needs Actions read/write on this one repo — don't use a classic (account-wide) token, and don't put the token in any file in this repo; it lives only in cron-job.org's job configuration.
 
-`check.yml` also caches pip packages and the Playwright Chromium browser between runs (`actions/cache`) so most runs skip the ~30-60s install step, and a `concurrency` group serializes runs so a slow run (e.g. a flaky Purdue fetch) can't overlap with the next trigger and race on the final `git push` — a newer trigger just bumps a still-queued older one rather than piling up a backlog. Both were added for a 1-minute cadence but are harmless (and still worth keeping) at 5 minutes.
+`check.yml` also caches pip packages and the Playwright Chromium browser between runs (`actions/cache`) so most runs skip the ~30-60s install step, and a `concurrency` group serializes runs so a slow run can't overlap with the next trigger and race on the final `git push` — a newer trigger just bumps a still-queued older one rather than piling up a backlog. Both matter at a 1-minute cadence.
 
 **If a run fails**: check the Actions tab — a failed run never reaches the `git commit` step, so no state is lost and the next successful run will still catch and alert on anything that was missed, but a project could sit un-alerted for as long as failures continue. Manually clicking **Run workflow** is the fastest way to recover rather than waiting on the next trigger.
 

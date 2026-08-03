@@ -309,3 +309,15 @@ necessary on technical grounds — it was a reasonable precaution given the
 information available at the time, but nothing observed actually implicates
 polling frequency. Worth deciding explicitly whether to return to a faster
 cadence or stay at 5 minutes, rather than carrying it forward by default.
+
+## 14. Back to ~1 minute
+
+Manually triggering the workflow post-fix (§13) succeeded and correctly
+alerted on `Purdue Student Life (Leadership)`, confirming the fix end to
+end. Per the standing question above, cron-job.org's interval was moved
+back from 5 minutes to its fastest 1-minute tier — the concurrency guard
+and dependency caching from §11 already handle the overlap/race concerns
+at that cadence, and the actual failure (§13) had nothing to do with
+frequency. The 5-minute detour was a reasonable precaution given the
+information available at the time, not a wasted step — but it wasn't the
+fix.
