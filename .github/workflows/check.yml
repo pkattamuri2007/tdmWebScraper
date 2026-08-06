@@ -3,9 +3,11 @@ name: Check for new 2026-2027 projects
 on:
   schedule:
     # GitHub's own scheduler is unreliable (see prd.md §10) and is left here
-    # only as a free backup — the real cadence (~every 1 min, see prd.md §13)
+    # only as a free backup — the real cadence (~every 10 min, see prd.md §15)
     # comes from an external cron-job.org trigger calling workflow_dispatch
-    # directly.
+    # directly. Bumped from ~1 min after runs occasionally taking 5-7 min
+    # (slow Purdue page loads) caused a pileup of queued/cancelled runs and
+    # stale-checkout push rejections.
     - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
 
@@ -57,4 +59,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add seen_projects.json seen_sections.json
           git diff --quiet --cached || git commit -m "Update seen projects/sections [skip ci]"
+          # workflow_dispatch checks out whatever main was at trigger time, so a
+          # run that sat queued for a while can be stale by the time it commits.
+          # Rebase onto the current tip right before pushing so we self-heal
+          # instead of hard-failing with a rejected push.
+          git pull --rebase origin main
           git push
