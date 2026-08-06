@@ -34,6 +34,16 @@
     "section": "137",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14258"
   },
+  "14277": {
+    "project": "RTX (RF-Informed Ground-Asset Optimization with UAS Support for Electromagnetic Operations) US CITIZEN REQUIRED",
+    "section": "139",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14277"
+  },
+  "14293": {
+    "project": "RTX (Intelligent Routing and Coordination for Unmanned Aerial Systems)",
+    "section": "140",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14293"
+  },
   "14296": {
     "project": "Cook (Evaluating AI Readiness of Clinical Study Documentation)",
     "section": "141",
@@ -43,6 +53,11 @@
     "project": "Young Institute (Augmented Reality)",
     "section": "149",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14367"
+  },
+  "14373": {
+    "project": "World Wildlife Fund (ManglarIA)",
+    "section": "150",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14373"
   },
   "14445": {
     "project": "Young Institute (Detection of Viable Microbes)",
@@ -114,15 +129,30 @@
     "section": "228",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15196"
   },
+  "15246": {
+    "project": "RTX (Intelligent Routing and Coordination for Unmanned Aerial Systems)",
+    "section": "240",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15246"
+  },
   "15307": {
     "project": "Cook (Evaluating AI Readiness of Clinical Study Documentation)",
     "section": "241",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15307"
   },
+  "15347": {
+    "project": "RTX (RF-Informed Ground-Asset Optimization with UAS Support for Electromagnetic Operations) US CITIZEN REQUIRED",
+    "section": "239",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15347"
+  },
   "15354": {
     "project": "Young Institute (Augmented Reality)",
     "section": "249",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15354"
+  },
+  "15362": {
+    "project": "World Wildlife Fund (ManglarIA)",
+    "section": "250",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15362"
   },
   "15432": {
     "project": "Young Institute (Detection of Viable Microbes)",
