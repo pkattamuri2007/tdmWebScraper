@@ -55,6 +55,13 @@
     "semester": "Full Year",
     "url": "https://crp.the-examples-book.com/rf-interference-classification-and-geolocation-240/"
   },
+  "244": {
+    "company": "RTX",
+    "location": "West Lafayette, IN;Fort Wayne, IN",
+    "name": "Intelligent Routing and Coordination for Unmanned Aerial Systems",
+    "semester": "Full Year",
+    "url": "https://crp.the-examples-book.com/intelligent-routing-and-coordination-for-unmanned-aerial-systems-244/"
+  },
   "258": {
     "company": "AstraZeneca",
     "location": "West Lafayette, IN",
@@ -138,5 +145,12 @@
     "name": "AI-First Analytics and Supply/Demand Intelligence",
     "semester": "Full Year",
     "url": "https://crp.the-examples-book.com/ai-first-analytics-and-supply-demand-intelligence-543/"
+  },
+  "545": {
+    "company": "RTX",
+    "location": "West Lafayette, IN;Indiana Data Mine Network;Fort Wayne, IN",
+    "name": "RF-Informed Ground-Asset Optimization with UAS Support for Electromagnetic Operations",
+    "semester": "-",
+    "url": "https://crp.the-examples-book.com/rf-informed-ground-asset-optimization-with-uas-support-for-electromagnetic-operations-545/"
   }
 }
