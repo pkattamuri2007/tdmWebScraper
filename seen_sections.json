@@ -9,6 +9,11 @@
     "section": "115",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14154"
   },
+  "14166": {
+    "project": "Cummins (Enterprise grade CI/CD and Agents with Persistent Memory)",
+    "section": "118",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14166"
+  },
   "14171": {
     "project": "Purdue Student Life (Leadership)",
     "section": "119",
@@ -18,6 +23,16 @@
     "project": "CSPAN (What Makes Congress Go Viral? Multimodal Classification of Engagement on C-SPAN's TikTok)",
     "section": "120",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14176"
+  },
+  "14217": {
+    "project": "Johnson & Johnson (Shaping High Impact Deliverables with GenAI)",
+    "section": "128",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14217"
+  },
+  "14258": {
+    "project": "Johnson & Johnson (QSTEPS Enablement)",
+    "section": "137",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14258"
   },
   "14296": {
     "project": "Cook (Evaluating AI Readiness of Clinical Study Documentation)",
@@ -34,10 +49,20 @@
     "section": "156",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14445"
   },
+  "14448": {
+    "project": "",
+    "section": "157",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14448"
+  },
   "14575": {
     "project": "Cummins (AI-Enabled Analytics, Agentic Business Processes, and Augmented Cont)",
     "section": "163",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14575"
+  },
+  "14667": {
+    "project": "Johnson & Johnson (QSTEPS Enablement)",
+    "section": "237",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14667"
   },
   "14705": {
     "project": "Fieldwatch (2.0 Build)",
@@ -69,6 +94,11 @@
     "section": "215",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15080"
   },
+  "15102": {
+    "project": "Cummins (Enterprise grade CI/CD and Agents with Persistent Memory)",
+    "section": "218",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15102"
+  },
   "15106": {
     "project": "Purdue Student Life (Leadership)",
     "section": "219",
@@ -78,6 +108,11 @@
     "project": "CSPAN (What Makes Congress Go Viral? Multimodal Classification of Engagement on C-SPAN's TikTok)",
     "section": "220",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15109"
+  },
+  "15196": {
+    "project": "Johnson & Johnson (Shaping High Impact Deliverables with GenAI)",
+    "section": "228",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15196"
   },
   "15307": {
     "project": "Cook (Evaluating AI Readiness of Clinical Study Documentation)",
@@ -93,6 +128,11 @@
     "project": "Young Institute (Detection of Viable Microbes)",
     "section": "256",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15432"
+  },
+  "15443": {
+    "project": "",
+    "section": "257",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15443"
   },
   "15493": {
     "project": "Cummins (AI-Enabled Analytics, Agentic Business Processes, and Augmented Cont)",
