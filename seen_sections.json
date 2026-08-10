@@ -80,7 +80,7 @@
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14575"
   },
   "14657": {
-    "project": "",
+    "project": "Stratolaunch (Aerospace Physics Inference Using Neural Networks)",
     "section": "236",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14657"
   },
@@ -189,6 +189,11 @@
     "section": "295",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=20418"
   },
+  "28496": {
+    "project": "NourishFlow (Early Warning for Food-System Reliabilty)",
+    "section": "322",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=28496"
+  },
   "28505": {
     "project": "Elevance Health (FraudDetection)",
     "section": "325",
@@ -203,6 +208,11 @@
     "project": "Elevance Health (FraudDetection)",
     "section": "337",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=28548"
+  },
+  "28558": {
+    "project": "NourishFlow (Early Warning for Food-System Reliabilty)",
+    "section": "339",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=28558"
   },
   "28574": {
     "project": "SnorkelAI (AI-First Analytics and Supply/Demand Intelligence)",
