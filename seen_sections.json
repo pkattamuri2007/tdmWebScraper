@@ -29,6 +29,11 @@
     "section": "128",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14217"
   },
+  "14220": {
+    "project": "",
+    "section": "129",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14220"
+  },
   "14254": {
     "project": "Stratolaunch (Aerospace Physics Inference Using Neural Networks)",
     "section": "136",
@@ -99,6 +104,11 @@
     "section": "103",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14752"
   },
+  "14926": {
+    "project": "Johnson & Johnson (SDS Workflow Knowledge Graph)",
+    "section": "172",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14926"
+  },
   "14974": {
     "project": "Fieldwatch (2.0 Build)",
     "section": "201",
@@ -139,6 +149,11 @@
     "section": "228",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15196"
   },
+  "15200": {
+    "project": "",
+    "section": "229",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15200"
+  },
   "15246": {
     "project": "RTX (Intelligent Routing and Coordination for Unmanned Aerial Systems)",
     "section": "240",
@@ -178,6 +193,11 @@
     "project": "Cummins (AI-Enabled Analytics, Agentic Business Processes, and Augmented Cont)",
     "section": "263",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15493"
+  },
+  "15567": {
+    "project": "Johnson & Johnson (SDS Workflow Knowledge Graph)",
+    "section": "272",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15567"
   },
   "20340": {
     "project": "Doral LLC (Agrivoltaics, Data-Based Decisions)",
