@@ -19,10 +19,7 @@ REQUEST_TIMEOUT = 30
 BREVO_SEND_URL = "https://api.brevo.com/v3/smtp/email"
 NTFY_DEFAULT_SERVER = "https://ntfy.sh"
 
-# Purdue Class Search (public, no login required) — a new CRN appearing here
-# means a new Corporate Partners project/lecture section just opened up.
-# PURDUE_TERM_CODE is Banner's internal code for PURDUE_TERM_NAME; both need
-# updating each time this is reused for a different semester.
+
 PURDUE_SEARCH_URL = "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_dyn_sched"
 PURDUE_TERM_CODE = "202710"
 PURDUE_TERM_NAME = "Fall 2026"
@@ -43,8 +40,7 @@ def fetch_current_projects() -> dict[str, dict]:
     )
     resp.raise_for_status()
 
-    # html.parser mis-nests this page's unclosed <td>/<tr> tags; lxml applies
-    # proper HTML5 tree-construction rules and parses the table correctly.
+    
     soup = BeautifulSoup(resp.text, "lxml")
     table = soup.find("table", id="projects-table")
     if table is None:
@@ -86,11 +82,7 @@ def fetch_current_sections() -> dict[str, dict]:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(user_agent=PURDUE_USER_AGENT)
         try:
-            # domcontentloaded rather than the default "load": we only need
-            # the DOM ready to select/fill/click, and waiting for every
-            # resource (including the page's Google Analytics script) to
-            # finish was causing occasional 30s timeouts against Purdue's
-            # site for no benefit to us.
+            
             page.goto(PURDUE_SEARCH_URL, timeout=REQUEST_TIMEOUT * 1000, wait_until="domcontentloaded")
             page.select_option('select[name="p_term"]', PURDUE_TERM_CODE)
             with page.expect_navigation(timeout=REQUEST_TIMEOUT * 1000, wait_until="domcontentloaded"):
@@ -153,10 +145,7 @@ def send_email(subject: str, body: str, recipients: list[str]) -> None:
     api_key = os.environ["BREVO_API_KEY"]
     sender_email = os.environ["BREVO_SENDER_EMAIL"]
 
-    # One API call per recipient — putting everyone in the same "to" array
-    # sends a single message where each recipient sees every other
-    # recipient's address, which doesn't fly once ALERT_EMAIL_TO holds more
-    # than a couple of trusted addresses.
+    
     for addr in recipients:
         resp = requests.post(
             BREVO_SEND_URL,
@@ -180,11 +169,7 @@ def send_ntfy(title: str, message: str) -> None:
     topic = os.environ["NTFY_TOPIC"]
     server = os.environ.get("NTFY_SERVER", NTFY_DEFAULT_SERVER).rstrip("/")
 
-    # Publish via JSON body rather than the Title/Priority HTTP headers ntfy
-    # also supports — header values must be Latin-1, and titles here can
-    # contain arbitrary Unicode (em dashes, scraped company/project names).
-    # Unlike the header API, the JSON API wants priority as an int 1-5
-    # (4 = "high"), not the string alias.
+    
     resp = requests.post(
         server,
         json={"topic": topic, "title": title, "message": message, "priority": 4},
