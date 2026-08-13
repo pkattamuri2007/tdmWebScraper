@@ -69,6 +69,16 @@
     "section": "150",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14373"
   },
+  "14408": {
+    "project": "Aerospace Corp (RF Interference Classification and Geolocation) US CITIZEN REQUIRED",
+    "section": "151",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14408"
+  },
+  "14433": {
+    "project": "James Hardie (AI Powered Home Remodeling)",
+    "section": "155",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=14433"
+  },
   "14445": {
     "project": "Young Institute (Detection of Viable Microbes)",
     "section": "156",
@@ -178,6 +188,16 @@
     "project": "World Wildlife Fund (ManglarIA)",
     "section": "250",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15362"
+  },
+  "15368": {
+    "project": "Aerospace Corp (RF Interference Classification and Geolocation) US CITIZEN REQUIRED",
+    "section": "251",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15368"
+  },
+  "15423": {
+    "project": "James Hardie (AI Powered Home Remodeling)",
+    "section": "255",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15423"
   },
   "15432": {
     "project": "Young Institute (Detection of Viable Microbes)",
