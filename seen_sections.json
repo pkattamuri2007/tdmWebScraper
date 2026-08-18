@@ -154,6 +154,11 @@
     "section": "220",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15109"
   },
+  "15148": {
+    "project": "U.S. SpaceCom J4 (Predictive Modeling of Infrastructure Degradation Using Integrated Data Streams)",
+    "section": "223",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15148"
+  },
   "15196": {
     "project": "Johnson & Johnson (Shaping High Impact Deliverables with GenAI)",
     "section": "228",
@@ -218,6 +223,11 @@
     "project": "Johnson & Johnson (SDS Workflow Knowledge Graph)",
     "section": "272",
     "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15567"
+  },
+  "15610": {
+    "project": "U.S. SpaceCom J4 (Predictive Modeling of Infrastructure Degradation Using Integrated Data Streams)",
+    "section": "123",
+    "url": "https://selfservice.mypurdue.purdue.edu/prod/bwckschd.p_disp_detail_sched?term_in=202710&crn_in=15610"
   },
   "20281": {
     "project": "Nesin Math Village (Library Digital Workflow and Management)",
